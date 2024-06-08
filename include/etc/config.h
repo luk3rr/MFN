@@ -28,12 +28,12 @@ namespace config
 
     // Log configuration
     const std::string LOG_PATH      = "/tmp/";
-    const std::string LOG_FILE      = "personal_finance.log";
+    const std::string LOG_FILE      = "mfn.log";
     const std::string LOG_FULL_PATH = LOG_PATH + LOG_FILE;
 
     // Database configuration
-    const std::string DATABASE_PATH      = HOME_PATH + ".config/personal_finance/";
-    const std::string DATABASE_FILE      = "personal_finance.db";
+    const std::string DATABASE_PATH      = HOME_PATH + ".config/mfn/";
+    const std::string DATABASE_FILE      = "mfn.db";
     const std::string DATABASE_FULL_PATH = DATABASE_PATH + DATABASE_FILE;
 
     /**

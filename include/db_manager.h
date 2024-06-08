@@ -27,6 +27,11 @@ class DBManager
          **/
         DBManager() noexcept;
 
+        /**
+         * @brief Create the tables in the database
+         **/
+        void CreateTables() noexcept;
+
     public:
         /**
          * @brief Get the singleton instance of the class

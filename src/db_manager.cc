@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <spdlog/common.h>
 #include <sqlite3.h>
+#include "sql_queries.h"
 
 DBManager::DBManager() noexcept
     : m_logger(LogManager::GetInstance())
@@ -46,6 +47,8 @@ DBManager::DBManager() noexcept
         std::cout << "Database opened successfully" << std::endl;
         this->m_logger.Log("Opened database successfully", spdlog::level::debug);
     }
+
+    this->CreateTables();
 }
 
 DBManager::~DBManager() noexcept
@@ -72,13 +75,32 @@ bool DBManager::ExecuteQuery(const std::string& query) noexcept
     }
 
     char* errMsg = nullptr;
+
+    this->m_logger.Log("Executing query: " + query, spdlog::level::debug);
+
     int   rc     = sqlite3_exec(this->m_db, query.c_str(), nullptr, nullptr, &errMsg);
+
     if (rc != SQLITE_OK)
     {
         this->m_logger.Log("SQL error: " + std::string(errMsg), spdlog::level::err);
         sqlite3_free(errMsg);
         return false;
     }
+    else
+    {
+        this->m_logger.Log("Query executed successfully" , spdlog::level::debug);
+    }
 
     return true;
+}
+
+void DBManager::CreateTables() noexcept
+{
+    this->ExecuteQuery(query::CREATE_TABLE_WALLET);
+    this->ExecuteQuery(query::CREATE_TABLE_CATEGORY);
+    this->ExecuteQuery(query::CREATE_TABLE_WALLET_TRANSACTION);
+    this->ExecuteQuery(query::CREATE_TABLE_TRANSFER);
+    this->ExecuteQuery(query::CREATE_TABLE_CREDIT_CARD);
+    this->ExecuteQuery(query::CREATE_TABLE_CREDIT_CARD_DEBT);
+    this->ExecuteQuery(query::CREATE_TABLE_CREDIT_CARD_PAYMENT);
 }
