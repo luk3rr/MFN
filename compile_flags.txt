@@ -1,0 +1,6 @@
+-xc++
+-I
+include
+-I
+include/etc
+-std=c++20
