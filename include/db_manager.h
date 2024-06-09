@@ -25,12 +25,12 @@ class DBManager
         /**
          * @brief Default constructor
          **/
-        DBManager() noexcept;
+        DBManager();
 
         /**
          * @brief Create the tables in the database
          **/
-        void CreateTables() noexcept;
+        void CreateTables();
 
     public:
         /**
@@ -50,5 +50,8 @@ class DBManager
          * @return bool SQLITE_OK if the command was executed successfully
          **/
         bool ExecuteQuery(const std::string& query) noexcept;
+
+        bool ExecuteQueryWithResult(const std::string&                 query,
+                                    std::function<void(sqlite3_stmt*)> callback) const;
 };
 #endif // DB_MANAGER_H_
