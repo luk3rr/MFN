@@ -33,6 +33,15 @@ ELSE()
     MESSAGE(FATAL_ERROR "spdlog not found!")
 ENDIF()
 
+# Google Test is required
+FIND_PACKAGE(GTest REQUIRED)
+IF(GTEST_FOUND)
+    MESSAGE(STATUS "Google Test found!")
+    INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
+ELSE()
+    MESSAGE(FATAL_ERROR "Google Test not found!")
+ENDIF()
+
 # Set compiler flags for different build types
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
     SET(EXECUTABLE_NAME "program_debug")
@@ -45,7 +54,7 @@ ENDIF()
 MESSAGE(STATUS "C++ Compiler Flags:${CMAKE_CXX_FLAGS}")
 
 SET(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-# SET(UNIT_TEST_DIR ${CMAKE_SOURCE_DIR}/test/unit)
+SET(UNIT_TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 SET(INC_DIR ${CMAKE_SOURCE_DIR}/include)
 SET(BENCHMARK_DIR ${CMAKE_SOURCE_DIR}/test/benchmark)
 
@@ -56,7 +65,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin/Release)
 
 # Get all files in the folders SRC_DIR and UNIT_TEST_DIR
 FILE(GLOB_RECURSE PROGRAM ${SRC_DIR}/*.c*)
-# FILE(GLOB_RECURSE UNIT_TESTS ${UNIT_TEST_DIR}/*.c*)
+FILE(GLOB_RECURSE UNIT_TESTS ${UNIT_TEST_DIR}/*.c*)
 
 INCLUDE_DIRECTORIES(${INC_DIR})
 INCLUDE_DIRECTORIES(${INC_DIR}/lib)
@@ -64,14 +73,22 @@ INCLUDE_DIRECTORIES(${INC_DIR}/exceptions)
 INCLUDE_DIRECTORIES(${INC_DIR}/etc)
 
 # Define the program lib
-ADD_LIBRARY(money_for_nothing ${PROGRAM})
+ADD_LIBRARY(mfn ${PROGRAM})
 
 # Make executables
 ADD_EXECUTABLE(program ${PROGRAM})
-# ADD_EXECUTABLE(unit_test ${UNIT_TESTS})
+ADD_EXECUTABLE(unit_test ${UNIT_TESTS})
 
-# Link libs
 TARGET_LINK_LIBRARIES(program sqlite3)
 TARGET_LINK_LIBRARIES(program spdlog)
 TARGET_LINK_LIBRARIES(program fmt)
-# TARGET_LINK_LIBRARIES(unit_test money_for_nothing)
+TARGET_LINK_LIBRARIES(program mfn)
+
+# Link libs
+TARGET_LINK_LIBRARIES(unit_test ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} pthread)
+TARGET_LINK_LIBRARIES(unit_test sqlite3)
+TARGET_LINK_LIBRARIES(unit_test spdlog)
+TARGET_LINK_LIBRARIES(unit_test fmt)
+TARGET_LINK_LIBRARIES(unit_test mfn)
+
+TARGET_COMPILE_DEFINITIONS(program PRIVATE TEST_ENVIRONMENT=false)

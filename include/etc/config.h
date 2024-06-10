@@ -9,6 +9,10 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#ifndef TEST_ENVIRONMENT
+#define TEST_ENVIRONMENT true
+#endif
+
 #include <cstdint>
 #include <ctime>
 #include <filesystem>
@@ -21,11 +25,20 @@
  **/
 namespace config
 {
-    constexpr uint64_t WORLD_GDP = 10e13; // 100 trillion dollars
-
     // Paths
     const std::string HOME_PATH = std::getenv("HOME") + std::string("/");
 
+#if TEST_ENVIRONMENT
+    // Log configuration
+    const std::string LOG_PATH      = "/tmp/";
+    const std::string LOG_FILE      = "mfn.log";
+    const std::string LOG_FULL_PATH = LOG_PATH + LOG_FILE;
+
+    // Database configuration
+    const std::string DATABASE_PATH      = "/tmp/mfn/";
+    const std::string DATABASE_FILE      = "mfn_test.db";
+    const std::string DATABASE_FULL_PATH = DATABASE_PATH + DATABASE_FILE;
+#else
     // Log configuration
     const std::string LOG_PATH      = "/tmp/";
     const std::string LOG_FILE      = "mfn.log";
@@ -35,6 +48,9 @@ namespace config
     const std::string DATABASE_PATH      = HOME_PATH + ".config/mfn/";
     const std::string DATABASE_FILE      = "mfn.db";
     const std::string DATABASE_FULL_PATH = DATABASE_PATH + DATABASE_FILE;
+#endif
+
+    constexpr uint64_t WORLD_GDP = 10e13; // 100 trillion dollars
 
     /**
      * @brief Enumerates the possible effects that can be applied to the text.

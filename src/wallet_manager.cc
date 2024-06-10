@@ -1,26 +1,56 @@
 /*
- * Filename: wallet.cc
+ * Filename: wallet_manager.cc
  * Created on: June  8, 2024
  * Author: Lucas Araújo <araujolucas@dcc.ufmg.br>
  */
 
-#include "wallet.h"
+#include "wallet_manager.h"
 #include "db_manager.h"
 #include "sql_queries.h"
 #include <cmath>
 #include <cstddef>
 #include <fmt/format.h>
 #include <stdexcept>
+#include <vector>
 
-Wallet::Wallet() noexcept
+WalletManager::WalletManager() noexcept
     : m_dbManager(DBManager::GetInstance()),
       m_logManager(LogManager::GetInstance())
 { }
 
-Wallet::~Wallet() noexcept { }
+WalletManager::~WalletManager() noexcept { }
 
-void Wallet::CreateWallet(const std::string& walletName,
-                          const double_t     initialBalance) noexcept
+void WalletManager::GetWallets(std::vector<std::string>& wallets) noexcept
+{
+    wallets.clear();
+
+    std::string query = "SELECT name FROM Wallet;";
+
+    this->m_dbManager.ExecuteQueryWithResult(query, [&wallets](sqlite3_stmt* stmt) {
+        wallets.push_back(
+            std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))));
+    });
+}
+
+void WalletManager::GetWallets(std::vector<std::string>& wallets,
+                               std::vector<double_t>&    balances) noexcept
+{
+    wallets.clear();
+    balances.clear();
+
+    std::string query = "SELECT name, balance FROM Wallet;";
+
+    this->m_dbManager.ExecuteQueryWithResult(
+        query,
+        [&wallets, &balances](sqlite3_stmt* stmt) {
+            wallets.push_back(std::string(
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))));
+            balances.push_back(sqlite3_column_double(stmt, 1));
+        });
+}
+
+void WalletManager::CreateWallet(const std::string& walletName,
+                                 const double_t     initialBalance) noexcept
 {
     std::string query = "INSERT INTO Wallet (name, balance) VALUES ('" + walletName +
                         "', " + std::to_string(initialBalance) + ");";
@@ -36,7 +66,7 @@ void Wallet::CreateWallet(const std::string& walletName,
     }
 }
 
-void Wallet::DeleteWallet(const std::string& walletName) noexcept
+void WalletManager::DeleteWallet(const std::string& walletName) noexcept
 {
     std::string query =
         fmt::format("DELETE FROM Wallet WHERE name = '{}';", walletName);
@@ -52,16 +82,23 @@ void Wallet::DeleteWallet(const std::string& walletName) noexcept
     }
 }
 
-void Wallet::Expense(const std::string& walletName,
-                     const std::string& category,
-                     const std::string& date,
-                     const std::string& description,
-                     const double_t     amount) noexcept
+void WalletManager::Expense(const std::string& walletName,
+                            const std::string& category,
+                            const std::string& date,
+                            const std::string& description,
+                            const double_t     amount) noexcept
 {
     // Check if wallet exists
     if (not this->WalletExists(walletName))
     {
         this->m_logManager.Log("Wallet '" + walletName + "' does not exist.");
+        return;
+    }
+
+    // Check if amount is valid
+    if (amount <= 0)
+    {
+        this->m_logManager.Log("Invalid income amount.");
         return;
     }
 
@@ -117,16 +154,23 @@ void Wallet::Expense(const std::string& walletName,
                            walletName + "' registered.");
 }
 
-void Wallet::Income(const std::string& walletName,
-                    const std::string& category,
-                    const std::string& date,
-                    const std::string& description,
-                    const double_t     amount) noexcept
+void WalletManager::Income(const std::string& walletName,
+                           const std::string& category,
+                           const std::string& date,
+                           const std::string& description,
+                           const double_t     amount) noexcept
 {
     // Check if wallet exists
     if (not this->WalletExists(walletName))
     {
         this->m_logManager.Log("Wallet '" + walletName + "' does not exist.");
+        return;
+    }
+
+    // Check if amount is valid
+    if (amount <= 0)
+    {
+        this->m_logManager.Log("Invalid income amount.");
         return;
     }
 
@@ -167,10 +211,10 @@ void Wallet::Income(const std::string& walletName,
                            walletName + "' registered.");
 }
 
-void Wallet::Transfer(const std::string& fromWallet,
-                      const std::string& toWallet,
-                      const std::string& date,
-                      const double_t     amount) noexcept
+void WalletManager::Transfer(const std::string& fromWallet,
+                             const std::string& toWallet,
+                             const std::string& date,
+                             const double_t     amount) noexcept
 {
     // Check if wallets exist
     if (not this->WalletExists(fromWallet))
@@ -234,7 +278,7 @@ void Wallet::Transfer(const std::string& fromWallet,
                            fromWallet + "' to wallet '" + toWallet + "' registered.");
 }
 
-bool Wallet::WalletExists(const std::string& walletName) noexcept
+bool WalletManager::WalletExists(const std::string& walletName) noexcept
 {
     std::string query =
         "SELECT COUNT(*) FROM Wallet WHERE name = '" + walletName + "';";
@@ -248,8 +292,8 @@ bool Wallet::WalletExists(const std::string& walletName) noexcept
     return count > 0;
 }
 
-void Wallet::UpdateBalance(const std::string& walletName,
-                           const double_t     newBalance) noexcept
+void WalletManager::UpdateBalance(const std::string& walletName,
+                                  const double_t     newBalance) noexcept
 {
     std::string query = fmt::format("UPDATE Wallet SET balance = {} WHERE name = '{}';",
                                     newBalance,
@@ -266,7 +310,7 @@ void Wallet::UpdateBalance(const std::string& walletName,
     }
 }
 
-bool Wallet::CategoryExists(const std::string& categoryName) noexcept
+bool WalletManager::CategoryExists(const std::string& categoryName) noexcept
 {
     std::string query =
         "SELECT COUNT(*) FROM Category WHERE name = '" + categoryName + "';";
@@ -280,7 +324,7 @@ bool Wallet::CategoryExists(const std::string& categoryName) noexcept
     return count > 0;
 }
 
-void Wallet::CreateCategory(const std::string& categoryName) noexcept
+void WalletManager::CreateCategory(const std::string& categoryName) noexcept
 {
     std::string query = "INSERT INTO Category (name) VALUES ('" + categoryName + "');";
 
@@ -295,7 +339,7 @@ void Wallet::CreateCategory(const std::string& categoryName) noexcept
     }
 }
 
-std::size_t Wallet::GetCategoryID(const std::string& category)
+std::size_t WalletManager::GetCategoryID(const std::string& category)
 {
     // Check if category exists
     if (not this->CategoryExists(category))
@@ -315,7 +359,7 @@ std::size_t Wallet::GetCategoryID(const std::string& category)
     return id;
 }
 
-double_t Wallet::GetBalance(const std::string& walletName) noexcept
+double_t WalletManager::GetBalance(const std::string& walletName) noexcept
 {
     std::string query =
         fmt::format("SELECT balance FROM Wallet WHERE name = '{}';", walletName);

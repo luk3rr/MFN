@@ -121,6 +121,18 @@ bool DBManager::ExecuteQueryWithResult(
     return true;
 }
 
+void DBManager::ResetDatabase() noexcept
+{
+    // Drop all tables
+    this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD_PAYMENT);
+    this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD_DEBT);
+    this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD);
+    this->ExecuteQuery(query::DELETE_TABLE_WALLET_TRANSACTION);
+    this->ExecuteQuery(query::DELETE_TABLE_TRANSFER);
+    this->ExecuteQuery(query::DELETE_TABLE_CATEGORY);
+    this->ExecuteQuery(query::DELETE_TABLE_WALLET);
+}
+
 void DBManager::CreateTables()
 {
     if (not this->ExecuteQuery(query::CREATE_TABLE_WALLET))

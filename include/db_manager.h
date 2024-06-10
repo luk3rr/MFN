@@ -27,11 +27,6 @@ class DBManager
          **/
         DBManager();
 
-        /**
-         * @brief Create the tables in the database
-         **/
-        void CreateTables();
-
     public:
         /**
          * @brief Get the singleton instance of the class
@@ -53,5 +48,13 @@ class DBManager
 
         bool ExecuteQueryWithResult(const std::string&                 query,
                                     std::function<void(sqlite3_stmt*)> callback) const;
+
+        void ResetDatabase() noexcept;
+
+    private:
+        /**
+         * @brief Create the tables in the database
+         **/
+        void CreateTables();
 };
 #endif // DB_MANAGER_H_

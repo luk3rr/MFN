@@ -81,5 +81,17 @@ namespace query
         "FOREIGN KEY (wallet_name) REFERENCES Wallet(name),"
         "FOREIGN KEY (debit_id) REFERENCES CreditCardDebt(debt_id)"
         ");";
+
+    // Queries to delete data from the database
+    const std::string DELETE_TABLE_WALLET   = "DELETE FROM Wallet;";
+    const std::string DELETE_TABLE_CATEGORY = "DELETE FROM Category;";
+    const std::string DELETE_TABLE_WALLET_TRANSACTION =
+        "DELETE FROM WalletTransaction;";
+    const std::string DELETE_TABLE_TRANSFER         = "DELETE FROM Transfer;";
+    const std::string DELETE_TABLE_CREDIT_CARD      = "DELETE FROM CreditCard;";
+    const std::string DELETE_TABLE_CREDIT_CARD_DEBT = "DELETE FROM CreditCardDebt;";
+    const std::string DELETE_TABLE_CREDIT_CARD_PAYMENT =
+        "DELETE FROM CreditCardPayment;";
+
 } // namespace query
 #endif // SQL_QUERIES_H_

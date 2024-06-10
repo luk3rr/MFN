@@ -1,31 +1,32 @@
 /*
- * Filename: wallet.h
+ * Filename: wallet_manager.h
  * Created on: June  8, 2024
  * Author: Lucas Araújo <araujolucas@dcc.ufmg.br>
  *
- * This file contains the Wallet class responsible for managing the wallet
+ * This file contains the WalletManager class responsible for managing the wallet
  * operations.
  *
- * The Wallet class is responsible for managing the wallet operations, such as
+ * The WalletManager class is responsible for managing the wallet operations, such as
  * creating a new wallet, deleting a wallet, registering a new expense, and
  * registering a new income.
  */
 
-#ifndef WALLET_H_
-#define WALLET_H_
+#ifndef WALLET_MANAGER_H_
+#define WALLET_MANAGER_H_
 
 #include <cmath>
 #include <string>
+#include <vector>
 
 #include "db_manager.h"
 #include "log_manager.h"
 
 /**
- * @brief The Wallet class is responsible for managing the wallet operations
+ * @brief The WalletManager class is responsible for managing the wallet operations
  * such as creating a new wallet, deleting a wallet, registering a new expense,
  * and registering a new income.
  **/
-class Wallet
+class WalletManager
 {
     private:
         LogManager& m_logManager;
@@ -35,12 +36,26 @@ class Wallet
         /**
          * @brief Default constructor
          **/
-        Wallet() noexcept;
+        WalletManager() noexcept;
 
         /**
          * @brief Default destructor
          **/
-        ~Wallet() noexcept;
+        ~WalletManager() noexcept;
+
+        /**
+         * @brief Get the wallets
+         * @param wallets The vector to store the wallets
+         **/
+        void GetWallets(std::vector<std::string>& wallets) noexcept;
+
+        /**
+         * @brief Get the wallets
+         * @param wallets The vector to store the wallets
+         * @param balances The vector to store the balances
+         **/
+        void GetWallets(std::vector<std::string>& wallets,
+                        std::vector<double_t>&    balances) noexcept;
 
         /**
          * @brief Create a new wallet
@@ -93,7 +108,7 @@ class Wallet
         void Transfer(const std::string& srcWalletId,
                       const std::string& dstWalletId,
                       const std::string& date,
-                      const double_t&    amount) noexcept;
+                      const double_t     amount) noexcept;
 
     private:
         /**
@@ -139,4 +154,4 @@ class Wallet
         double_t GetBalance(const std::string& walletName) noexcept;
 };
 
-#endif // WALLET_H_
+#endif // WALLET_MANAGER_H_
