@@ -10,7 +10,7 @@
 #define CONFIG_H_
 
 #ifndef TEST_ENVIRONMENT
-#define TEST_ENVIRONMENT true
+#    define TEST_ENVIRONMENT true
 #endif
 
 #include <cstdint>
@@ -51,6 +51,9 @@ namespace config
 #endif
 
     constexpr uint64_t WORLD_GDP = 10e13; // 100 trillion dollars
+
+    constexpr uint16_t MIN_BILLING_DAY = 1;
+    constexpr uint16_t MAX_BILLING_DAY = 28;
 
     /**
      * @brief Enumerates the possible effects that can be applied to the text.

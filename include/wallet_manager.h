@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "category_manager.h"
 #include "db_manager.h"
 #include "log_manager.h"
 
@@ -29,8 +30,9 @@
 class WalletManager
 {
     private:
-        LogManager& m_logManager;
-        DBManager&  m_dbManager;
+        LogManager&     m_logManager;
+        DBManager&      m_dbManager;
+        CategoryManager m_categoryManager;
 
     public:
         /**
@@ -127,26 +129,6 @@ class WalletManager
          **/
         void UpdateBalance(const std::string& walletName,
                            const double_t     amount) noexcept;
-
-        /**
-         * @brief Check if a category exists
-         * @param category The category name
-         * @return True if the category exists, false otherwise
-         **/
-        bool CategoryExists(const std::string& category) noexcept;
-
-        /**
-         * @brief Create a new category
-         * @param category The category name
-         **/
-        void CreateCategory(const std::string& category) noexcept;
-
-        /**
-         * @brief Get the category id
-         * @param category The category name
-         * @return The category id
-         **/
-        std::size_t GetCategoryID(const std::string& category);
 
         /**
          * @brief Get the wallet balance

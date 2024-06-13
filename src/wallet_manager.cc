@@ -5,6 +5,7 @@
  */
 
 #include "wallet_manager.h"
+#include "category_manager.h"
 #include "db_manager.h"
 #include "sql_queries.h"
 #include <cmath>
@@ -115,11 +116,11 @@ void WalletManager::Expense(const std::string& walletName,
     }
 
     // Check if category exists
-    if (not this->CategoryExists(category))
+    if (not this->m_categoryManager.CategoryExists(category))
     {
         this->m_logManager.Log("Category '" + category +
                                "' does not exist. Creating it.");
-        this->CreateCategory(category);
+        this->m_categoryManager.CreateCategory(category);
     }
 
     // Insert transaction
@@ -129,7 +130,7 @@ void WalletManager::Expense(const std::string& walletName,
                                         "category_id, type, date, amount, description) "
                                         "VALUES ('{}', {}, '{}', '{}', {}, '{}');",
                                         walletName,
-                                        this->GetCategoryID(category),
+                                        this->m_categoryManager.GetCategoryID(category),
                                         "EXPENSE",
                                         date,
                                         amount,
@@ -178,11 +179,11 @@ void WalletManager::Income(const std::string& walletName,
     }
 
     // Check if category exists
-    if (not this->CategoryExists(category))
+    if (not this->m_categoryManager.CategoryExists(category))
     {
         this->m_logManager.Log("Category '" + category +
                                "' does not exist. Creating it.");
-        this->CreateCategory(category);
+        this->m_categoryManager.CreateCategory(category);
     }
 
     // Insert transaction
@@ -192,7 +193,7 @@ void WalletManager::Income(const std::string& walletName,
                                         "category_id, type, date, amount, description) "
                                         "VALUES ('{}', {}, '{}', '{}', {}, '{}');",
                                         walletName,
-                                        this->GetCategoryID(category),
+                                        this->m_categoryManager.GetCategoryID(category),
                                         "INCOME",
                                         date,
                                         amount,
@@ -311,56 +312,6 @@ void WalletManager::UpdateBalance(const std::string& walletName,
     {
         this->m_logManager.Log("Wallet '" + walletName + "' does not exist.");
     }
-}
-
-bool WalletManager::CategoryExists(const std::string& categoryName) noexcept
-{
-    std::string query =
-        "SELECT COUNT(*) FROM Category WHERE name = '" + categoryName + "';";
-
-    int count = 0;
-
-    this->m_dbManager.ExecuteQueryWithResult(query, [&count](sqlite3_stmt* stmt) {
-        count = sqlite3_column_int(stmt, 0);
-    });
-
-    return count > 0;
-}
-
-void WalletManager::CreateCategory(const std::string& categoryName) noexcept
-{
-    std::string query =
-        fmt::format("INSERT INTO Category (name) VALUES ('{}');", categoryName);
-
-    if (this->CategoryExists(categoryName))
-    {
-        this->m_logManager.Log("Category '" + categoryName + "' already exists.");
-    }
-    else
-    {
-        this->m_dbManager.ExecuteQuery(query);
-        this->m_logManager.Log("Category '" + categoryName + "' created.");
-    }
-}
-
-std::size_t WalletManager::GetCategoryID(const std::string& category)
-{
-    // Check if category exists
-    if (not this->CategoryExists(category))
-    {
-        throw std::runtime_error("Category does not exist.");
-    }
-
-    std::string query =
-        fmt::format("SELECT category_id FROM Category WHERE name = '{}';", category);
-
-    std::size_t id = 0;
-
-    this->m_dbManager.ExecuteQueryWithResult(query, [&id](sqlite3_stmt* stmt) {
-        id = sqlite3_column_int64(stmt, 0);
-    });
-
-    return id;
 }
 
 double_t WalletManager::GetBalance(const std::string& walletName) noexcept

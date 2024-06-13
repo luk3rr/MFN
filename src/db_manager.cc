@@ -128,13 +128,13 @@ void DBManager::ResetDatabase() noexcept
 {
     // Delete all data from tables
 #if TEST_ENVIRONMENT
+    this->ExecuteQuery(query::DELETE_TABLE_TRANSFER);
+    this->ExecuteQuery(query::DELETE_TABLE_WALLET_TRANSACTION);
     this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD_PAYMENT);
     this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD_DEBT);
     this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD);
-    this->ExecuteQuery(query::DELETE_TABLE_WALLET_TRANSACTION);
-    this->ExecuteQuery(query::DELETE_TABLE_TRANSFER);
-    this->ExecuteQuery(query::DELETE_TABLE_CATEGORY);
     this->ExecuteQuery(query::DELETE_TABLE_WALLET);
+    this->ExecuteQuery(query::DELETE_TABLE_CATEGORY);
 #else
     this->m_logger.Log("ResetDatabase is not allowed in production environment",
                        spdlog::level::warn);

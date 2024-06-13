@@ -188,7 +188,6 @@ TEST_F(WalletManagerTest, ExpenseInvalidValue)
     EXPECT_EQ(200, balances[1]);
 }
 
-
 TEST_F(WalletManagerTest, TransferValidValue)
 {
     m_walletManager->CreateWallet("w1", 100);

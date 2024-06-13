@@ -6,10 +6,12 @@
 
 #include <gtest/gtest.h>
 #include <stdatomic.h>
+#include <vector>
 
+#include "config.h"
 #include "credit_card_manager.h"
 
-class CreditCardManagerTest : public ::testing::Test
+class CreditCardManagerTest : public testing::Test
 {
     protected:
         CreditCardManager* m_creditCardManager;
@@ -18,6 +20,7 @@ class CreditCardManagerTest : public ::testing::Test
         void SetUp() override
         {
             m_dbManager.ResetDatabase();
+
             m_creditCardManager = new CreditCardManager();
         }
 
@@ -61,12 +64,18 @@ TEST_F(CreditCardManagerTest, AddCreditCardInvalidDueDay)
 {
     CreditCardManager creditCardManager;
     bool              succAddCreditCard =
-        creditCardManager.AddCreditCard("1234567890123456", 0, "John Doe", 1000);
+        creditCardManager.AddCreditCard("1234567890123456",
+                                        config::MIN_BILLING_DAY - 1,
+                                        "John Doe",
+                                        1000);
 
     EXPECT_FALSE(succAddCreditCard);
 
     bool succAddCreditCardAgain =
-        creditCardManager.AddCreditCard("00031123213123", 29, "John Does", 1001);
+        creditCardManager.AddCreditCard("00031123213123",
+                                        config::MAX_BILLING_DAY + 1,
+                                        "John Does",
+                                        1001);
 
     EXPECT_FALSE(succAddCreditCardAgain);
 }

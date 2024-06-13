@@ -3,22 +3,31 @@
  * Created on: June 11, 2024
  * Author: Lucas Araújo <araujolucas@dcc.ufmg.br>
  *
+ * This file contains the declaration of the CreditCardManager class.
+ * This class is responsible for managing the credit cards in the database.
  */
 
 #ifndef CREDIT_CARD_MANAGER_H_
 #define CREDIT_CARD_MANAGER_H_
 
+#include "category_manager.h"
 #include "db_manager.h"
 #include "log_manager.h"
 #include "utils.h"
 #include <cmath>
 #include <cstdint>
 
+/**
+ * @brief The CreditCardManager class is responsible for managing the credit cards in
+ *the database. It is responsible for adding new credit cards, adding new expenses to
+ *the credit cards and getting the credit card information.
+ **/
 class CreditCardManager
 {
     private:
-        DBManager&  m_dbManager;
-        LogManager& m_logManager;
+        DBManager&      m_dbManager;
+        LogManager&     m_logManager;
+        CategoryManager m_categoryManager;
 
     public:
         /**

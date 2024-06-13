@@ -2,6 +2,9 @@
  * Filename: db_manager.h
  * Created on: June  7, 2024
  * Author: Lucas Araújo <araujolucas@dcc.ufmg.br>
+ *
+ * This file contains the declaration of the DBManager class. This class is
+ * responsible for managing the database.
  */
 
 #ifndef DB_MANAGER_H_

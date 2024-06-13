@@ -5,6 +5,7 @@
  */
 
 #include "credit_card_manager.h"
+#include "config.h"
 #include "db_manager.h"
 #include <cmath>
 #include <cstdint>
@@ -77,11 +78,14 @@ bool CreditCardManager::AddCreditCard(const std::string& cardNumber,
         return false;
     }
 
-    if (billingDueDay < 1 or billingDueDay > 28)
+    if (billingDueDay < config::MIN_BILLING_DAY or
+        billingDueDay > config::MAX_BILLING_DAY)
     {
         this->m_logManager.Log(
-            fmt::format("Invalid billing due day: {}. It must be between 1 and 28.",
-                        billingDueDay));
+            fmt::format("Invalid billing due day: {}. It must be between {} and {}.",
+                        billingDueDay,
+                        config::MIN_BILLING_DAY,
+                        config::MAX_BILLING_DAY));
         return false;
     }
 
