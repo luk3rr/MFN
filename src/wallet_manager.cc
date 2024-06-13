@@ -9,6 +9,7 @@
 #include "sql_queries.h"
 #include <cmath>
 #include <cstddef>
+#include <fmt/core.h>
 #include <fmt/format.h>
 #include <stdexcept>
 #include <vector>
@@ -52,8 +53,10 @@ void WalletManager::GetWallets(std::vector<std::string>& wallets,
 void WalletManager::CreateWallet(const std::string& walletName,
                                  const double_t     initialBalance) noexcept
 {
-    std::string query = "INSERT INTO Wallet (name, balance) VALUES ('" + walletName +
-                        "', " + std::to_string(initialBalance) + ");";
+    std::string query =
+        fmt::format("INSERT INTO Wallet (name, balance) VALUES ('{}', '{}')",
+                    walletName,
+                    initialBalance);
 
     if (this->WalletExists(walletName))
     {
@@ -122,7 +125,7 @@ void WalletManager::Expense(const std::string& walletName,
     // Insert transaction
     try
     {
-        std::string query = fmt::format("INSERT INTO WalletTransaction (wallet_name, "
+        std::string query = fmt::format("INSERT INTO WalletTransaction (wallet, "
                                         "category_id, type, date, amount, description) "
                                         "VALUES ('{}', {}, '{}', '{}', {}, '{}');",
                                         walletName,
@@ -185,7 +188,7 @@ void WalletManager::Income(const std::string& walletName,
     // Insert transaction
     try
     {
-        std::string query = fmt::format("INSERT INTO WalletTransaction (wallet_name, "
+        std::string query = fmt::format("INSERT INTO WalletTransaction (wallet, "
                                         "category_id, type, date, amount, description) "
                                         "VALUES ('{}', {}, '{}', '{}', {}, '{}');",
                                         walletName,
@@ -326,7 +329,8 @@ bool WalletManager::CategoryExists(const std::string& categoryName) noexcept
 
 void WalletManager::CreateCategory(const std::string& categoryName) noexcept
 {
-    std::string query = "INSERT INTO Category (name) VALUES ('" + categoryName + "');";
+    std::string query =
+        fmt::format("INSERT INTO Category (name) VALUES ('{}');", categoryName);
 
     if (this->CategoryExists(categoryName))
     {

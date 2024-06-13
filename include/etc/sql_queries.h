@@ -28,26 +28,26 @@ namespace query
     const std::string CREATE_TABLE_WALLET_TRANSACTION =
         "CREATE TABLE IF NOT EXISTS WalletTransaction ("
         "wallet_transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "wallet_name INTEGER NOT NULL,"
+        "wallet CHAR(50) NOT NULL,"
         "category_id INTEGER NOT NULL,"
         "type TEXT CHECK(type IN ('INCOME', 'EXPENSE')) NOT NULL,"
         "date DATE NOT NULL,"
         "amount REAL NOT NULL,"
         "description CHAR(50),"
-        "FOREIGN KEY (wallet_name) REFERENCES Wallet(name),"
+        "FOREIGN KEY (wallet) REFERENCES Wallet(name),"
         "FOREIGN KEY (category_id) REFERENCES Category(category_id)"
         ");";
 
     const std::string CREATE_TABLE_TRANSFER =
         "CREATE TABLE IF NOT EXISTS Transfer ("
         "transfer_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "sender_wallet_id INTEGER NOT NULL,"
-        "receiver_wallet_id INTEGER NOT NULL,"
+        "sender_wallet CHAR(50) NOT NULL,"
+        "receiver_wallet CHAR(50) NOT NULL,"
         "date DATE NOT NULL,"
         "amount REAL NOT NULL,"
         "description CHAR(50),"
-        "FOREIGN KEY (sender_wallet_id) REFERENCES Wallet(name),"
-        "FOREIGN KEY (receiver_wallet_id) REFERENCES Wallet(name)"
+        "FOREIGN KEY (sender_wallet) REFERENCES Wallet(name),"
+        "FOREIGN KEY (receiver_wallet) REFERENCES Wallet(name)"
         ");";
 
     const std::string CREATE_TABLE_CREDIT_CARD =
@@ -55,7 +55,8 @@ namespace query
         "number CHAR(20) PRIMARY KEY,"
         "name CHAR(50) NOT NULL,"
         "max_debt REAL NOT NULL,"
-        "expiration_date DATE NOT NULL"
+        "billing_due_day INTEGER NOT NULL CHECK (billing_due_day >= 1 AND "
+        "billing_due_day <= 28)"
         ");";
 
     const std::string CREATE_TABLE_CREDIT_CARD_DEBT =
@@ -65,7 +66,6 @@ namespace query
         "category_id INTEGER NOT NULL,"
         "date DATE NOT NULL,"
         "total_amount REAL NOT NULL,"
-        "remaining_amount REAL NOT NULL,"
         "description CHAR(50),"
         "FOREIGN KEY (crc_number) REFERENCES CreditCard(number)"
         "FOREIGN KEY (category_id) REFERENCES Category(category_id)"
@@ -74,12 +74,13 @@ namespace query
     const std::string CREATE_TABLE_CREDIT_CARD_PAYMENT =
         "CREATE TABLE IF NOT EXISTS CreditCardPayment ("
         "payment_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "wallet_name INTEGER NOT NULL,"
-        "debit_id INTEGER NOT NULL,"
-        "date DATE NOT NULL,"
+        "wallet INTEGER,"
+        "debt_id INTEGER NOT NULL,"
+        "date DATE,"
         "amount REAL NOT NULL,"
-        "FOREIGN KEY (wallet_name) REFERENCES Wallet(name),"
-        "FOREIGN KEY (debit_id) REFERENCES CreditCardDebt(debt_id)"
+        "installment INTEGER NOT NULL,"
+        "FOREIGN KEY (wallet) REFERENCES Wallet(name),"
+        "FOREIGN KEY (debt_id) REFERENCES CreditCardDebt(debt_id)"
         ");";
 
     // Queries to delete data from the database

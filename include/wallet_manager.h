@@ -46,6 +46,7 @@ class WalletManager
         /**
          * @brief Get the wallets
          * @param wallets The vector to store the wallets
+         * NOTE: All data stored in the vector will be lost
          **/
         void GetWallets(std::vector<std::string>& wallets) noexcept;
 
@@ -53,6 +54,7 @@ class WalletManager
          * @brief Get the wallets
          * @param wallets The vector to store the wallets
          * @param balances The vector to store the balances
+         * NOTE: All data stored in the vectors will be lost
          **/
         void GetWallets(std::vector<std::string>& wallets,
                         std::vector<double_t>&    balances) noexcept;

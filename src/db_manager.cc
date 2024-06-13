@@ -83,6 +83,7 @@ bool DBManager::ExecuteQuery(const std::string& query) noexcept
 
     if (rc != SQLITE_OK)
     {
+        this->m_logger.Log("SQL error: " + std::string(errMsg), spdlog::level::err);
         sqlite3_free(errMsg);
         return false;
     }
@@ -103,6 +104,8 @@ bool DBManager::ExecuteQueryWithResult(
     int           rc = sqlite3_prepare_v2(m_db, query.c_str(), -1, &stmt, nullptr);
     if (rc != SQLITE_OK)
     {
+        this->m_logger.Log("SQL error: " + std::string(sqlite3_errmsg(m_db)),
+                           spdlog::level::err);
         return false;
     }
 
@@ -123,7 +126,8 @@ bool DBManager::ExecuteQueryWithResult(
 
 void DBManager::ResetDatabase() noexcept
 {
-    // Drop all tables
+    // Delete all data from tables
+#if TEST_ENVIRONMENT
     this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD_PAYMENT);
     this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD_DEBT);
     this->ExecuteQuery(query::DELETE_TABLE_CREDIT_CARD);
@@ -131,6 +135,12 @@ void DBManager::ResetDatabase() noexcept
     this->ExecuteQuery(query::DELETE_TABLE_TRANSFER);
     this->ExecuteQuery(query::DELETE_TABLE_CATEGORY);
     this->ExecuteQuery(query::DELETE_TABLE_WALLET);
+#else
+    this->m_logger.Log("ResetDatabase is not allowed in production environment",
+                       spdlog::level::warn);
+    std::cerr << "ResetDatabase is not allowed in production environment" << std::endl;
+    std::exit(EXIT_FAILURE);
+#endif
 }
 
 void DBManager::CreateTables()

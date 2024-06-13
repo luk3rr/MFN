@@ -38,6 +38,8 @@ int main()
         std::vector<std::string> wallets;
         wallet.GetWallets(wallets);
 
+        db.ResetDatabase();
+
         for (const auto& w : wallets)
         {
             std::cout << "Wallet: " << w << std::endl;
