@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdint>
 #include <fmt/format.h>
+#include <stdexcept>
 #include <string>
 
 CreditCardManager::CreditCardManager() noexcept
@@ -35,6 +36,7 @@ void CreditCardManager::GetCreditCards(
 bool CreditCardManager::GetCreditCardInfo(const std::string& cardNumber,
                                           std::string&       cardName,
                                           double_t&          maxDebt,
+                                          double_t&          totalPendingDebt,
                                           uint16_t& billingDueDay) const noexcept
 {
     if (not this->CreditCardExists(cardNumber))
@@ -49,6 +51,16 @@ bool CreditCardManager::GetCreditCardInfo(const std::string& cardNumber,
         fmt::format("SELECT name, max_debt, billing_due_day FROM CreditCard "
                     "WHERE number = '{}';",
                     cardNumber);
+
+    try
+    {
+        totalPendingDebt = this->GetTotalPendingDebt(cardNumber);
+    }
+    catch (std::runtime_error& re)
+    {
+        this->m_logManager.Log(re.what(), spdlog::level::err);
+        return false;
+    }
 
     return this->m_dbManager.ExecuteQueryWithResult(
         query,
@@ -138,6 +150,7 @@ bool CreditCardManager::AddDebt(const std::string& cardNumber,
         return false;
     }
 
+    // Check if credit card has enough credit
     if (not this->HasEnoughCredit(cardNumber, totalAmount))
     {
         this->m_logManager.Log(
@@ -147,9 +160,17 @@ bool CreditCardManager::AddDebt(const std::string& cardNumber,
         return false;
     }
 
+    // Check if category exists
+    if (not this->m_categoryManager.CategoryExists(category))
+    {
+        this->m_logManager.Log("Category '" + category +
+                               "' does not exist. Creating it.");
+        this->m_categoryManager.CreateCategory(category);
+    }
+
     // Get category id
     std::string getCategoryId =
-        fmt::format("SELECT id FROM Category WHERE name = '{}';", category);
+        fmt::format("SELECT category_id FROM Category WHERE name = '{}';", category);
 
     uint32_t category_id = 0;
 
@@ -163,7 +184,7 @@ bool CreditCardManager::AddDebt(const std::string& cardNumber,
     std::string insertDebt =
         fmt::format("INSERT INTO CreditCardDebt (crc_number, category_id, "
                     "date, total_amount, description) VALUES "
-                    "('{}', '{}', {}, '{}', '{}');",
+                    "('{}', {}, '{}', '{}', '{}');",
                     cardNumber,
                     category_id,
                     date,
@@ -194,7 +215,7 @@ bool CreditCardManager::AddDebt(const std::string& cardNumber,
             std::string insertInstallment =
                 fmt::format("INSERT INTO CreditCardPayment (debt_id, date, amount, "
                             "installment) VALUES "
-                            "({}, {}, {}, {});",
+                            "({}, '{}', {}, {});",
                             debt_id,
                             dueDate,
                             installmentAmount,
@@ -212,6 +233,56 @@ bool CreditCardManager::AddDebt(const std::string& cardNumber,
     }
 
     return true;
+}
+
+bool CreditCardManager::GetLastExpense(const std::string& cardNumber,
+                                       std::string&       category,
+                                       std::string&       date,
+                                       double_t&          totalAmount,
+                                       std::string&       description,
+                                       uint16_t&          installments,
+                                       uint32_t&          debtId) const noexcept
+{
+    if (not this->CreditCardExists(cardNumber))
+    {
+        this->m_logManager.Log(
+            fmt::format("Credit card '{}' does not exist.", cardNumber));
+        return false;
+    }
+
+    std::string query = fmt::format(
+        "SELECT CreditCardDebt.debt_id, Category.name, CreditCardDebt.date, "
+        "CreditCardDebt.total_amount, CreditCardDebt.description, "
+        "COUNT(CreditCardPayment.installment) AS installments "
+        "FROM CreditCardDebt "
+        "INNER JOIN Category "
+        "ON CreditCardDebt.category_id = Category.category_id "
+        "INNER JOIN CreditCardPayment "
+        "ON CreditCardDebt.debt_id = CreditCardPayment.debt_id "
+        "WHERE CreditCardDebt.crc_number = '{}' "
+        "GROUP BY CreditCardDebt.debt_id "
+        "ORDER BY CreditCardDebt.debt_id DESC LIMIT 1;",
+        cardNumber);
+
+    return this->m_dbManager.ExecuteQueryWithResult(
+        query,
+        [&debtId, &category, &date, &totalAmount, &description, &installments](
+            sqlite3_stmt* stmt) {
+            debtId = sqlite3_column_int(stmt, 0);
+
+            category = std::string(
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+
+            date = std::string(
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+
+            totalAmount = sqlite3_column_double(stmt, 3);
+
+            description = std::string(
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4)));
+
+            installments = sqlite3_column_int(stmt, 5);
+        });
 }
 
 bool CreditCardManager::CreditCardExists(const std::string& cardNumber) const noexcept

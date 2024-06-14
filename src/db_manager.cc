@@ -97,11 +97,16 @@ bool DBManager::ExecuteQueryWithResult(
 {
     if (not m_db)
     {
+        this->m_logger.Log("Database is not open", spdlog::level::err);
         return false;
     }
 
     sqlite3_stmt* stmt;
-    int           rc = sqlite3_prepare_v2(m_db, query.c_str(), -1, &stmt, nullptr);
+
+    this->m_logger.Log("Executing query: " + query, spdlog::level::debug);
+
+    int rc = sqlite3_prepare_v2(m_db, query.c_str(), -1, &stmt, nullptr);
+
     if (rc != SQLITE_OK)
     {
         this->m_logger.Log("SQL error: " + std::string(sqlite3_errmsg(m_db)),
@@ -109,18 +114,29 @@ bool DBManager::ExecuteQueryWithResult(
         return false;
     }
 
+    bool rowFetched = false;
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     {
+        rowFetched = true;
         callback(stmt);
     }
 
     if (rc != SQLITE_DONE)
     {
+        this->m_logger.Log("SQL error on step: " + std::string(sqlite3_errmsg(m_db)),
+                           spdlog::level::err);
         sqlite3_finalize(stmt);
         return false;
     }
 
     sqlite3_finalize(stmt);
+
+    if (not rowFetched)
+    {
+        this->m_logger.Log("No rows fetched by query", spdlog::level::debug);
+        return false;
+    }
+
     return true;
 }
 

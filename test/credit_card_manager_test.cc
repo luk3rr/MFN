@@ -4,6 +4,7 @@
  * Author: Lucas Araújo <araujolucas@dcc.ufmg.br>
  */
 
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <stdatomic.h>
 #include <vector>
@@ -105,17 +106,20 @@ TEST_F(CreditCardManagerTest, GetCreditCardInfo)
     // Check if the credit card info can be retrieved correctly
     std::string cardName;
     double_t    maxDebt;
+    double_t    pendingDebt;
     uint16_t    billingDueDay;
     bool        succGetCreditCardInfo =
         m_creditCardManager->GetCreditCardInfo("1234567890123456",
                                                cardName,
                                                maxDebt,
+                                               pendingDebt,
                                                billingDueDay);
 
     ASSERT_TRUE(succGetCreditCardInfo);
 
     EXPECT_EQ(cardName, "John Doe");
     EXPECT_EQ(maxDebt, 1000);
+    EXPECT_EQ(pendingDebt, 0);
     EXPECT_EQ(billingDueDay, 1);
 }
 
@@ -124,11 +128,13 @@ TEST_F(CreditCardManagerTest, GetCreditCardInfoInvalid)
     // Try to retrieve the info of a non-existent credit card
     std::string cardName;
     double_t    maxDebt;
+    double_t    pendingDebt;
     uint16_t    billingDueDay;
     bool        succGetCreditCardInfo =
         m_creditCardManager->GetCreditCardInfo("1234567890123456",
                                                cardName,
                                                maxDebt,
+                                               pendingDebt,
                                                billingDueDay);
 
     EXPECT_FALSE(succGetCreditCardInfo);
@@ -166,13 +172,53 @@ TEST_F(CreditCardManagerTest, AddDebt)
     // Add a debt to the credit card
     bool succAddDebt = m_creditCardManager->AddDebt("1234567890123456",
                                                     "Groceries",
-                                                    "2024/06/12",
+                                                    "2024-01-12",
                                                     150,
                                                     "Groceries shopping",
                                                     1);
 
-    // TODO: Criar função para verificar se a dívida foi adicionada corretamente
     EXPECT_TRUE(succAddDebt);
+
+    std::string category;
+    std::string date;
+    double_t    amount;
+    std::string description;
+    uint16_t    installments;
+    uint32_t    debtId;
+
+    // Check if the debt was added correctly
+    bool succGetDebt = m_creditCardManager->GetLastExpense("1234567890123456",
+                                                           category,
+                                                           date,
+                                                           amount,
+                                                           description,
+                                                           installments,
+                                                           debtId);
+
+    ASSERT_TRUE(succGetDebt);
+
+    EXPECT_EQ(category, "Groceries");
+    EXPECT_EQ(date, "2024-01-12");
+    EXPECT_EQ(amount, 150);
+    EXPECT_EQ(description, "Groceries shopping");
+    EXPECT_EQ(installments, 1);
+
+    // Check if the debt was added to the credit card
+    std::string cardName;
+    double_t    pendingDebt;
+    double_t    maxDebt;
+    uint16_t    billingDueDay;
+
+    bool succGetCreditCardInfo =
+        m_creditCardManager->GetCreditCardInfo("1234567890123456",
+                                               cardName,
+                                               maxDebt,
+                                               pendingDebt,
+                                               billingDueDay);
+
+    ASSERT_TRUE(succGetCreditCardInfo);
+
+    EXPECT_EQ(pendingDebt, 150);
 }
 
 TEST_F(CreditCardManagerTest, AddDebtWithNoCreditCard)
@@ -180,7 +226,7 @@ TEST_F(CreditCardManagerTest, AddDebtWithNoCreditCard)
     // Try to add a debt without a credit card
     bool succAddDebt = m_creditCardManager->AddDebt("1234567890123456",
                                                     "Groceries",
-                                                    "2024/06/12",
+                                                    "2024-06-12",
                                                     150,
                                                     "Groceries shopping",
                                                     1);
@@ -199,7 +245,7 @@ TEST_F(CreditCardManagerTest, AddDebtInvalidAmount)
     // Try to add a debt with an invalid amount
     bool succAddDebt = m_creditCardManager->AddDebt("1234567890123456",
                                                     "Groceries",
-                                                    "2024/06/12",
+                                                    "2024-06-12",
                                                     0,
                                                     "Groceries shopping",
                                                     1);
@@ -208,7 +254,7 @@ TEST_F(CreditCardManagerTest, AddDebtInvalidAmount)
 
     bool succAddDebtAgain = m_creditCardManager->AddDebt("1234567890123456",
                                                          "Groceries",
-                                                         "2024/06/12",
+                                                         "2024-06-12",
                                                          -1,
                                                          "Groceries shopping",
                                                          1);
@@ -227,7 +273,7 @@ TEST_F(CreditCardManagerTest, AddDebtWithInstallments)
     // Add a debt to the credit card
     bool succAddDebt = m_creditCardManager->AddDebt("1234567890123456",
                                                     "Groceries",
-                                                    "2024/06/12",
+                                                    "2024-06-12",
                                                     150,
                                                     "Groceries shopping",
                                                     7);
@@ -248,7 +294,7 @@ TEST_F(CreditCardManagerTest, AddDebtWithInstallmentsInvalidInstallments)
     // Try to add a debt with an invalid amount
     bool succAddDebt = m_creditCardManager->AddDebt("1234567890123456",
                                                     "Groceries",
-                                                    "2024/06/12",
+                                                    "2024-06-12",
                                                     150,
                                                     "Groceries shopping",
                                                     0);
@@ -267,7 +313,7 @@ TEST_F(CreditCardManagerTest, AddDebtWithInstallmentsInvalidAmount)
     // Try to add a debt with an invalid amount
     bool succAddDebt = m_creditCardManager->AddDebt("1234567890123456",
                                                     "Groceries",
-                                                    "2024/06/12",
+                                                    "2024-06-12",
                                                     0,
                                                     "Groceries shopping",
                                                     7);
@@ -276,7 +322,7 @@ TEST_F(CreditCardManagerTest, AddDebtWithInstallmentsInvalidAmount)
 
     bool succAddDebtAgain = m_creditCardManager->AddDebt("1234567890123456",
                                                          "Groceries",
-                                                         "2024/06/12",
+                                                         "2024-06-12",
                                                          -1,
                                                          "Groceries shopping",
                                                          7);

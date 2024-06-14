@@ -24,21 +24,19 @@ int main()
         wallet.CreateWallet("carteira", 33.25);
         wallet.CreateWallet("bancoDaEsquina");
 
-        wallet.Expense("bancoDaEsquina", "home", "2024/06/08", "gasto com a casa", 50);
-        wallet.Expense("carteira", "food", "2024/06/09", "dogao", 17.70);
-        wallet.Income("carteira", "salary", "2024/06/08", "salario", 1000);
-        wallet.Expense("bancoDaEsquina", "home", "2024/06/08", "gasto com a casa", 50);
+        wallet.Expense("bancoDaEsquina", "home", "2024-06-08", "gasto com a casa", 50);
+        wallet.Expense("carteira", "food", "2024-06-09", "dogao", 17.70);
+        wallet.Income("carteira", "salary", "2024-06-08", "salario", 1000);
+        wallet.Expense("bancoDaEsquina", "home", "2024-06-08", "gasto com a casa", 50);
 
-        wallet.Expense("bancoDaEsquina", "home", "2024/06/09", "gasto com a casa", 50);
-        wallet.Income("bancoDaEsquina", "salary", "2024/06/09", "salario", 1000);
-        wallet.Expense("bancoDaEsquina", "home", "2024/06/09", "gasto com a casa", 50);
-        wallet.Transfer("carteira", "bancoDaEsquina", "2024/06/10", 1300);
-        wallet.Transfer("carteira", "bancoDaEsquina", "2024/06/10", 997);
+        wallet.Expense("bancoDaEsquina", "home", "2024-06-09", "gasto com a casa", 50);
+        wallet.Income("bancoDaEsquina", "salary", "2024-06-09", "salario", 1000);
+        wallet.Expense("bancoDaEsquina", "home", "2024-06-09", "gasto com a casa", 50);
+        wallet.Transfer("carteira", "bancoDaEsquina", "2024-06-10", 1300);
+        wallet.Transfer("carteira", "bancoDaEsquina", "2024-06-10", 997);
 
         std::vector<std::string> wallets;
         wallet.GetWallets(wallets);
-
-        db.ResetDatabase();
 
         for (const auto& w : wallets)
         {

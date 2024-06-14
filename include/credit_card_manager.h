@@ -52,12 +52,14 @@ class CreditCardManager
          * @param cardNumber The credit card number
          * @param cardName The name of the credit card
          * @param maxDebt The maximum debt allowed for the credit card
+         * @param totalPendingDebt The total pending debt of the credit card
          * @param billingDueDay The day of the month the bill is due
          * @return True if the credit card exists, false otherwise
          **/
         bool GetCreditCardInfo(const std::string& cardNumber,
                                std::string&       cardName,
                                double_t&          maxDebt,
+                               double_t&          totalPendingDebt,
                                uint16_t&          billingDueDay) const noexcept;
 
         /**
@@ -87,6 +89,25 @@ class CreditCardManager
                      const double_t     totalAmount,
                      const std::string& description,
                      const uint16_t     installments) noexcept;
+
+        /**
+         * @brief Get information about the last expense of a credit card
+         * @param cardNumber The credit card number
+         * @param category The category of the expense
+         * @param date The date of the expense
+         * @param totalAmount The total amount of the expense
+         * @param description The description of the expense
+         * @param installments The number of installments of the expense
+         * @param debtId The id of the expense
+         * @return True if the credit card has expenses, false otherwise
+         **/
+        bool GetLastExpense(const std::string& cardNumber,
+                            std::string&       category,
+                            std::string&       date,
+                            double_t&          totalAmount,
+                            std::string&       description,
+                            uint16_t&          installments,
+                            uint32_t&          debtId) const noexcept;
 
     private:
         /**

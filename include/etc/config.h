@@ -93,25 +93,6 @@ namespace config
         Credit,
         Transfer
     };
-
-    /**
-     * @brief Namespace that contains utility functions
-     **/
-    namespace utils
-    {
-        inline void PrintColor(uint16_t color1, uint16_t color2, std::string text);
-
-        inline void PrintColor(uint16_t color, std::string text);
-
-        inline void PrintColorNoLine(uint16_t color, std::string text);
-
-        inline void
-        PrintColorNoLine(uint16_t color1, uint16_t color2, std::string text);
-
-        inline void ClearConsole();
-
-        inline void SelectDate(std::string& date);
-    }; // namespace utils
 } // namespace config
 
 #endif // CONFIG_H_
